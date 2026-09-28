@@ -47,13 +47,16 @@ jobs:
 
       # حارس: الوسم مُعلَّق (annotated) ويشير إلى commit محتوى في origin/main —
       # منع إصدار commit منفصل أو كود غير معتمد خلف رقم صحيح. لا latest ولا main.
+      # الفحص عبر ls-remote على سطر التقشير ^{} (حاضر حصرًا للوسوم المعلقة)
+      # لأن actions/checkout يبني مرجعًا خفيفًا محليًا لوسم الإطلاق فلا يصح
+      # الاعتماد على cat-file المحلي (فشل حقيقي في التشغيلين الأولين).
       - name: Verify annotated tag contained in main
         run: |
-          if [ "$(git cat-file -t "refs/tags/$GITHUB_REF_NAME")" != "tag" ]; then
-            echo "::error::Release tag must be annotated (git tag -a vX.Y.Z)"
+          TAG_COMMIT=$(git ls-remote origin "refs/tags/${GITHUB_REF_NAME}^{}" | cut -f1)
+          if [ -z "$TAG_COMMIT" ]; then
+            echo "::error::Release tag must be annotated (git tag -a vX.Y.Z) — no peeled ^{} object on the remote ref"
             exit 1
           fi
-          TAG_COMMIT=$(git rev-list -n 1 "$GITHUB_REF_NAME")
           if ! git merge-base --is-ancestor "$TAG_COMMIT" origin/main; then
             echo "::error::Tag commit ($TAG_COMMIT) is not contained in origin/main"
             exit 1
