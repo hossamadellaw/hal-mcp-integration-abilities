@@ -1,0 +1,13 @@
+{
+    "name": "hossamadellaw/hal-mcp-integration-abilities",
+    "description": "HAL MCP Integration Abilities — restricted hal/* WordPress Abilities exposed through the official WordPress MCP Adapter. Runtime dependency: the Plugin Update Checker library only (G04); MCP and provider transports are first-party code and are deliberately not re-declared here.",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "yahnis-elsts/plugin-update-checker": "~5.7.0"
+    },
+    "config": {
+        "platform": {
+            "php": "8.0.0"
+        }
+    }
+}

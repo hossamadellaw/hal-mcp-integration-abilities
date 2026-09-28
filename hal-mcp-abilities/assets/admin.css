@@ -1,0 +1,210 @@
+/**
+ * hal-mcp-abilities — admin screen styles (F19).
+ *
+ * Scoped strictly under .hal-mcp-admin; no site-facing UI is touched. Uses
+ * the WordPress admin palette and form conventions — no design library. The
+ * status badges pair a word with a marker so state is never conveyed by
+ * color alone (F19: "عدم الاعتماد على اللون وحده").
+ */
+
+.hal-mcp-admin .hal-mcp-intro {
+	max-width: 70em;
+	font-size: 14px;
+}
+
+.hal-mcp-admin .hal-mcp-cards {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1em;
+	margin: 1em 0;
+}
+
+.hal-mcp-admin .hal-mcp-card {
+	flex: 1 1 18em;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 0.75em 1em;
+}
+
+.hal-mcp-admin .hal-mcp-card h2 {
+	margin-top: 0;
+	font-size: 14px;
+}
+
+.hal-mcp-admin .hal-mcp-steps {
+	max-width: 70em;
+}
+
+.hal-mcp-admin .hal-mcp-step {
+	margin: 0.5em 0;
+	padding: 0.6em 0.9em;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.hal-mcp-admin .hal-mcp-step-state {
+	display: inline-block;
+	min-width: 8em;
+	font-weight: 600;
+	margin-inline-end: 0.75em;
+}
+
+.hal-mcp-admin .hal-mcp-step-state::before {
+	content: '○ ';
+	font-weight: 400;
+}
+
+.hal-mcp-admin .hal-mcp-step-ready .hal-mcp-step-state::before,
+.hal-mcp-admin .hal-mcp-step-connected .hal-mcp-step-state::before,
+.hal-mcp-admin .hal-mcp-step-started .hal-mcp-step-state::before {
+	content: '● ';
+}
+
+.hal-mcp-admin .hal-mcp-step-needs_action .hal-mcp-step-state::before {
+	content: '▲ ';
+}
+
+.hal-mcp-admin .hal-mcp-step-detail {
+	display: block;
+	margin: 0.25em 0;
+	color: #50575e;
+}
+
+.hal-mcp-admin .hal-mcp-status {
+	display: inline-block;
+	padding: 0 0.4em;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	font-size: 12px;
+	background: #f0f0f1;
+	margin-inline-end: 0.4em;
+}
+
+.hal-mcp-admin .hal-mcp-status-available,
+.hal-mcp-admin .hal-mcp-status-connected {
+	border-color: #2271b1;
+}
+
+.hal-mcp-admin .hal-mcp-status-needs_setup,
+.hal-mcp-admin .hal-mcp-status-needs_action {
+	border-color: #d63638;
+}
+
+.hal-mcp-admin .hal-mcp-transcript {
+	max-width: 70em;
+	margin-top: 1em;
+}
+
+.hal-mcp-admin .hal-mcp-message {
+	border-inline-start: 3px solid #c3c4c7;
+	padding: 0.25em 0.75em;
+	margin: 0.5em 0;
+	background: #fff;
+}
+
+.hal-mcp-admin .hal-mcp-message-user {
+	border-inline-start-color: #2271b1;
+}
+
+.hal-mcp-admin .hal-mcp-message-assistant {
+	border-inline-start-color: #50575e;
+}
+
+.hal-mcp-admin .hal-mcp-tool-line {
+	font-family: Consolas, Monaco, monospace;
+	font-size: 12px;
+	margin: 0.15em 0;
+}
+
+.hal-mcp-admin .hal-mcp-pending-note {
+	font-weight: 600;
+}
+
+.hal-mcp-admin .hal-mcp-chat-status {
+	margin-inline-start: 0.75em;
+	color: #50575e;
+}
+
+.hal-mcp-admin .hal-mcp-request-detail {
+	max-width: 70em;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 0.75em 1em;
+	margin-top: 1em;
+}
+
+.hal-mcp-admin .hal-mcp-diff-row {
+	margin: 0.75em 0;
+}
+
+.hal-mcp-admin .hal-mcp-diff-before,
+.hal-mcp-admin .hal-mcp-diff-after {
+	font-family: Consolas, Monaco, monospace;
+	font-size: 12px;
+	white-space: pre-wrap;
+	word-break: break-word;
+	border: 1px solid #dcdcde;
+	border-radius: 3px;
+	padding: 0.4em 0.6em;
+	margin: 0.25em 0;
+	background: #f6f7f7;
+}
+
+.hal-mcp-admin .hal-mcp-diff-after {
+	background: #f0f6fc;
+}
+
+.hal-mcp-admin .hal-mcp-error {
+	color: #d63638;
+}
+
+.hal-mcp-admin .hal-mcp-inventory {
+	max-height: 24em;
+	overflow: auto;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.hal-mcp-admin .hal-mcp-provider-box {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 0.5em 1em;
+	margin: 0.5em 0;
+	max-width: 70em;
+}
+
+.hal-mcp-admin .hal-mcp-provider-box > summary {
+	cursor: pointer;
+	font-weight: 600;
+	padding: 0.25em 0;
+}
+
+.hal-mcp-admin .hal-mcp-advanced > summary {
+	cursor: pointer;
+	color: #2271b1;
+}
+
+.hal-mcp-admin .hal-mcp-radio {
+	display: inline-block;
+	margin-inline-end: 1em;
+}
+
+.hal-mcp-admin .hal-mcp-runs {
+	list-style: disc;
+	padding-inline-start: 1.5em;
+}
+
+.hal-mcp-admin .hal-mcp-log-pagination {
+	display: flex;
+	gap: 0.5em;
+}
+
+/* Keyboard focus: keep the visible WordPress focus ring inside custom boxes. */
+.hal-mcp-admin .hal-mcp-card:focus-within,
+.hal-mcp-admin .hal-mcp-step:focus-within {
+	border-color: #2271b1;
+}

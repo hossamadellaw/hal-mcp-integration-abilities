@@ -1,0 +1,171 @@
+# خط إصدار واحد محدود (G10): أدوات رسمية فقط، GITHUB_TOKEN المدمج، لا PAT ولا أسرار خارجية.
+# التنفيذ الفعلي إجراء نشر مستقل يحتاج تفويضًا لاحقًا — كتابة هذا الملف لا تشغّل شيئًا.
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+# الافتراضي للقراءة فقط؛ صلاحية الكتابة محصورة في مهمة النشر دونها.
+permissions:
+  contents: read
+
+env:
+  EXPECTED_UPDATE_URI: https://github.com/hossamadellaw/hal-mcp-integration-abilities
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # حارس: بيئة التشغيل تحتاج PHP؛ غيابه فشل مسمى لا خطوة صامتة.
+      - name: Require PHP runtime
+        run: |
+          if ! php -v >/dev/null 2>&1; then
+            echo "::error::PHP is not available on the runner; the release build needs PHP CLI."
+            exit 1
+          fi
+
+      # حارس: الوسوم بصيغة vX.Y.Z حصرًا — رقم مكونات رقمي يمنع وسوم أسماء فضفاضة.
+      - name: Validate release tag shape
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [[ ! "$TAG_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Release tag must use vX.Y.Z with numeric components"
+            exit 1
+          fi
+
+      # حارس: الوسم مُعلَّق (annotated) ويشير إلى commit محتوى في origin/main —
+      # منع إصدار commit منفصل أو كود غير معتمد خلف رقم صحيح. لا latest ولا main.
+      - name: Verify annotated tag contained in main
+        run: |
+          if [ "$(git cat-file -t "refs/tags/$GITHUB_REF_NAME")" != "tag" ]; then
+            echo "::error::Release tag must be annotated (git tag -a vX.Y.Z)"
+            exit 1
+          fi
+          TAG_COMMIT=$(git rev-list -n 1 "$GITHUB_REF_NAME")
+          if ! git merge-base --is-ancestor "$TAG_COMMIT" origin/main; then
+            echo "::error::Tag commit ($TAG_COMMIT) is not contained in origin/main"
+            exit 1
+          fi
+
+      # حواريات مطابقة الأرقام الثلاثة مع الوسم: أنماط مشتقة من ملفات هذا المشروع
+      # الفعلية (ترويسة docblock، define، Stable tag). كل grep محصّن بـ"|| true" مع
+      # فحص فارغ صريح — فشل grep الصامت تحت set -e وقع فعليًا في المرجع.
+      - name: Verify version identity against tag
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+
+          HEADER_VERSION=$(grep -oPm1 '^[ \t]*\*[ \t]*Version:[ \t]*\K[0-9.]+' hal-mcp-integration-abilities.php || true)
+          CONST_VERSION=$(grep -oPm1 "define\( 'HAL_MCP_ABILITIES_VERSION', '\K[0-9.]+" hal-mcp-integration-abilities.php || true)
+          UPDATE_URI=$(grep -oPm1 '^[ \t]*\*[ \t]*Update URI:[ \t]*\Khttps?://\S+' hal-mcp-integration-abilities.php || true)
+          STABLE_TAG=$(grep -oPm1 '^Stable tag:[ \t]*\K[0-9.]+' readme.txt || true)
+
+          if [ -z "$HEADER_VERSION" ]; then
+            echo "::error::Plugin header Version not found"
+            exit 1
+          fi
+          if [ "$HEADER_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Header version ($HEADER_VERSION) != tag ($TAG_VERSION)"
+            exit 1
+          fi
+          if [ -z "$CONST_VERSION" ]; then
+            echo "::error::Version constant HAL_MCP_ABILITIES_VERSION not found"
+            exit 1
+          fi
+          if [ "$CONST_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Version constant ($CONST_VERSION) != tag ($TAG_VERSION)"
+            exit 1
+          fi
+          if [ -z "$STABLE_TAG" ]; then
+            echo "::error::Stable tag not found in readme.txt"
+            exit 1
+          fi
+          if [ "$STABLE_TAG" != "$TAG_VERSION" ]; then
+            echo "::error::Stable tag ($STABLE_TAG) != tag ($TAG_VERSION)"
+            exit 1
+          fi
+          if [ -z "$UPDATE_URI" ]; then
+            echo "::error::Update URI not found in plugin header"
+            exit 1
+          fi
+          if [ "$UPDATE_URI" != "$EXPECTED_UPDATE_URI" ]; then
+            echo "::error::Update URI ($UPDATE_URI) != expected project URI ($EXPECTED_UPDATE_URI)"
+            exit 1
+          fi
+
+      # التحقق من composer ثم التثبيت المقفول من composer.lock (بلا dev)، ثم audit.
+      # composer.json لهذا المشروع بلا scripts وبلا composer-plugins (مراجَع)، لذا
+      # --no-scripts --no-plugins آمن ويقلل سطح التنفيذ.
+      - name: Validate and install locked production dependencies
+        run: |
+          composer validate --strict
+          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts --no-plugins
+          composer audit --locked --no-dev
+
+      # البناء والتحقق عبر أداة G11 الوحيدة — فحوص الحزمة تعيش هنا فقط، لا تعاد كتابتها.
+      - name: Build release package
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          php scripts/build-release.php build --out dist --expect-version "$TAG_VERSION"
+
+      - name: Verify release package
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          php scripts/build-release.php verify "dist/hal-mcp-integration-abilities-${TAG_VERSION}.zip" \
+            --expect-version "$TAG_VERSION" \
+            --expect-update-uri "$EXPECTED_UPDATE_URI"
+
+      - name: Upload verified release assets
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-assets-${{ github.ref_name }}
+          path: |
+            dist/hal-mcp-integration-abilities-*.zip
+            dist/hal-mcp-integration-abilities-*.zip.sha256
+          if-no-files-found: error
+
+  publish:
+    needs: build-and-verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download verified release assets
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-assets-${{ github.ref_name }}
+          path: dist
+
+      # حارس: ما تحقق قبل النشر هو ما يُنشر — إعادة فحص التكامل بعد النقل عبر artifact.
+      - name: Re-check asset checksums after transfer
+        run: |
+          cd dist
+          sha256sum -c ./*.zip.sha256
+
+      # Release مسودة أولًا ثم النشر؛ حارس منع استبدال Release منشور عند rerun:
+      # أي Release موجود (أو Draft قديم) لنفس الوسم يفشل المهمة برسالة مسماة —
+      # لا حذف أصول ولا استبدال؛ Draft الفاشل يحذفه المالك يدويًا ثم يعيد التشغيل.
+      - name: Create draft release and publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            echo "::error::A release (or stale draft) already exists for $GITHUB_REF_NAME. Never replace a published release or delete its assets — fix forward with a new tag. If a failed draft exists, delete it manually, then rerun."
+            exit 1
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            dist/hal-mcp-integration-abilities-*.zip \
+            dist/hal-mcp-integration-abilities-*.zip.sha256 \
+            --title "HAL MCP Integration Abilities ${GITHUB_REF_NAME}" \
+            --generate-notes \
+            --draft
+          gh release edit "$GITHUB_REF_NAME" --draft=false

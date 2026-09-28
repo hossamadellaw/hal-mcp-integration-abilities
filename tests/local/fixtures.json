@@ -1,0 +1,61 @@
+{
+  "_notice": "SYNTHETIC FIXTURES (V05) — small, non-real, labeled data. None of these ids, keys, texts, or timestamps describe a real site, provider, or request. They exist only so tests/local/admin.test.mjs can exercise the pure admin.js helpers with declared source/state.",
+  "_source": "hand-written for batch 6 (F19) of the hal-mcp-integration-abilities v2.0.0 execution roadmap",
+  "request_detail": {
+    "request_id": 4711,
+    "operation": "update-post",
+    "state": "pending",
+    "preview": "update-post → post#5 [title, excerpt]",
+    "targets": [ { "type": "post", "id": 5 } ],
+    "language": "en_US",
+    "origin": { "source": "runner", "model": "fixture-model", "version": "2.0.0" },
+    "created_at": "2026-01-01 00:00:00",
+    "authorized": true,
+    "rows": [
+      { "field": "title", "before": "Old fixture title", "after": "New fixture title <script>alert(1)</script>", "is_design": false, "is_new": false },
+      { "field": "excerpt", "before": "", "after": "A short fixture excerpt with key sk-fixture000000000000 inside", "is_design": false, "is_new": true },
+      { "field": "content", "before": "<!-- fixture:block -->", "after": "<!-- wp:paragraph -->serialized<!-- /wp:paragraph -->", "is_design": true, "is_new": false }
+    ]
+  },
+  "run_awaiting": {
+    "run_id": 9001,
+    "state": "awaiting_approval",
+    "provider": "openai",
+    "model": "fixture-model",
+    "rounds_used": 2,
+    "last_error": "",
+    "pending_request": { "request_id": 4711, "preview": "update-post → post#5 [title]" },
+    "started_at": 1767225600,
+    "finished_at": 0,
+    "messages": [
+      { "role": "user", "text": "Fixture instruction: update the post title." },
+      { "role": "assistant", "text": "", "tool_calls": [ { "name": "hal/get-post", "args": { "post_id": 5 } } ] },
+      { "role": "user", "text": "", "tool_calls": [ { "name": "hal/get-post", "is_error": false, "truncated": false, "call_id": "c1" } ] },
+      { "role": "assistant", "text": "I prepared the change; it is waiting for your approval." }
+    ]
+  },
+  "overview_before_setup": {
+    "hasProvider": false,
+    "hasKey": false,
+    "hasModel": false,
+    "test": null,
+    "hasRuns": false,
+    "pendingCount": 0
+  },
+  "overview_awaiting_approval": {
+    "hasProvider": true,
+    "hasKey": true,
+    "hasModel": true,
+    "test": { "ok": true, "code": "ok", "tested_at": 1767225600 },
+    "hasRuns": true,
+    "pendingCount": 1
+  },
+  "overview_key_no_test": {
+    "hasProvider": true,
+    "hasKey": true,
+    "hasModel": true,
+    "test": null,
+    "hasRuns": false,
+    "pendingCount": 0
+  }
+}

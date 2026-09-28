@@ -1,0 +1,22 @@
+# Composer runtime is rebuilt by `composer install` from the committed
+# composer.lock — the lock file itself must always stay tracked.
+vendor/
+
+# Build output of scripts/build-release.php — never committed, built in the
+# release workflow or on demand locally.
+dist/
+
+# Local working temp folders (batch baselines, scratch copies).
+_tmp-*/
+
+# Environment files and secrets — never tracked.
+.env
+.env.*
+*.pem
+*.key
+
+# Logs and OS/editor noise.
+*.log
+.DS_Store
+Thumbs.db
+Desktop.ini
