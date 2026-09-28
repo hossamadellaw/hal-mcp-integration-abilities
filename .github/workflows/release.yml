@@ -23,6 +23,9 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
+          # إطلاق الوسم يجعل actions/checkout يبني مرجعًا خفيفًا محليًا دون
+          # كائن الوسم المعلق — جلب الوسوم الحقيقية شرط فحص "annotated".
+          fetch-tags: true
           persist-credentials: false
 
       # حارس: بيئة التشغيل تحتاج PHP؛ غيابه فشل مسمى لا خطوة صامتة.
